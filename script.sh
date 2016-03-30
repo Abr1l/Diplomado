@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # -*- ENCODING: UTF-8 -*-
 
 #Creado por Milagros Nazaret Lopez C. @milinazaret
@@ -6,80 +6,85 @@
 
 
 # Script que muestra un menu de instalacion de paquetes basicos
-# asi como actualizacion y borrado de paquetes no necesarios luego de dicha instalacion
+# asi como actualizacion y borrado de paquetes no necesarios luego de
+#dicha instalacion
 
 
+#************************ Definicion de Funciones ************************
 
-
-clear
-
-
-#   Funciones
-
+#Funcion que genera el menu de opciones
 function menu_principal()
 {
     clear
     echo "Selecciona una Opcion:"
     echo
     echo "1) Actualizar Sistema"
-    echo "2) Instalar Suite Ofimatica: OpenOffice Idioma Español"
-    echo "3) Instalar Navegador Web: Google Chrome "
-    echo "4) Instalar Reproductor de Musica y Video: VLC"
+    echo "2) Instalar Editor de Video: Openshot"
+    echo "3) Instalar Aplicación para Capturas de imágenes o videos con web cams: Shutter "
+    echo "4) Instalar Reproductor de Música y Video: VLC"
     echo "5) Instalar Editor de Texto: Atom"
-    echo "6) Instalar Compresor Multiformato: 7zip"
+    echo "6) Instalar Editor de Imágenes: Gimp"
+    echo "7) Limpieza de paquetes y archivos no necesarios"
     echo
-
     echo "9) Salir"
-
     echo
-
-    echo -n "Indica una opcion: "
+    echo -n "Indica una opcion [1...9]: "
   }
 
 #Funcion que Actualiza el Sistema
 function actualizar_repositorios()
 {
-  clear
   apt-get -qq update    #-qq Actualiza en modo silecioso
 }
 
+#Funcion que Actualiza los repositorios y paquetes
 function actualizar_sist()
 {
-  clear
   echo "Actualizando los Repositorios, puede tardar unos minutos...."
   actualizar_repositorios
   echo "Actualizando los Paquetes, puede tardar unos minutos...."
   apt-get -qq upgrade   #-qq Actualiza en modo silecioso
+  echo "Actualizando el Kernel, puede tardar unos minutos..."
+  apt-get -qq dist-upgrade
   echo "Actualización Exitosa!"
 }
 
-function limpieza()
-{
-  clear
-  echo "Ejecutando limpieza al Sistema..."
-  apt-get -qq autoremove
-  apt-get -qq autoclean
-  apt-get -qq clean
-  echo "Finalizacion de la instalacion"
-}
 
+#Funcion que muestra la opcion elegida
 function opcion_escogida()
 {
-clear
 echo "---------------****--------------"
-echo " Seleccionaste la Opcion $1"
+echo " Seleccionaste la Opción $1"
 echo "---------------****--------------"
 }
+
+
+
+#************************ Culminacion de las Funciones ************************
+
+
+#Validar que el usuario sea root
+
+if [ $USER != root ]; then
+  echo -e "Este script debe ser utilizado como 'root'"
+  echo -e "Saliendo..."
+  exit 0
+fi
+
 
 #Hacer mientras La Opcion indicada sea diferente a salir
 
-#recordar validar que deben ser root
-
+opc=0 #inicializando opc a cero por defecto
 
 until [ "$opc" -eq "9" ];
  do
      case $opc in
-       1)
+
+        0)
+          menu_principal
+          ;;
+
+        1)
           opcion_escogida $opc
           actualizar_sist
           menu_principal
@@ -87,21 +92,17 @@ until [ "$opc" -eq "9" ];
 
         2)
           opcion_escogida $opc
-          add-apt-repository ppa:libreoffice/ppa
           actualizar_repositorios
-          apt-get -qq install libreoffice -y
-          apt-get -qq install libreoffice-l10n-es -y
-          echo "instalacion Exitosa!"
+          apt-get -qq install openshot kazam -y
+          echo "Instalación Exitosa!"
           menu_principal
           ;;
 
         3)
           opcion_escogida $opc
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           actualizar_repositorios
-          sudo apt-get -qq install google-chrome-stable -y
-          echo "instalacion Exitosa!"
+          apt-get -qq install shutter -y
+          echo "Instalación Exitosa!"
           menu_principal
           ;;
 
@@ -109,7 +110,7 @@ until [ "$opc" -eq "9" ];
           opcion_escogida $opc
           actualizar_repositorios
           apt-get -qq install vlc browser-plugin-vlc -y
-          echo "instalacion Exitosa!"
+          echo "Instalación Exitosa!"
           menu_principal
           ;;
 
@@ -118,28 +119,36 @@ until [ "$opc" -eq "9" ];
           add-apt-repository ppa:webupd8team/atom
           actualizar_repositorios
           apt-get -qq install atom -y
-          echo "instalacion Exitosa!"
+          echo "Instalación Exitosa!"
           menu_principal
           ;;
 
         6)
           opcion_escogida $opc
           actualizar_repositorios
-          apt-get -qq install p7zip-full p7zip-rar rar unrar -y
-          echo "instalacion Exitosa!"
+          apt-get -qq install gimp -y
+          apt-get -qq install gimp-help-es -y
+          echo "Instalación Exitosa!"
           menu_principal
           ;;
 
-         *) # Esta opcion se ejecuta si no es ninguna de las anteriores
-          echo "$opc, No es una opcion no Valida, presione enter para regresar al menu"
-          read foo
+        7)
+          opcion_escogida $opc
+          echo "Ejecutando limpieza al Sistema..."
+          apt-get -qq autoremove -y
+          apt-get -qq autoclean
+          apt-get -qq clean
+          echo "Sistema Limpio"
           menu_principal
           ;;
 
-
+       *) # Esta opcion se ejecuta si no es ninguna de las anteriores
+          echo "$opc, Opción no Válida, intente nuevamente... "
+          read opc
+          menu_principal
+          ;;
     esac
-   read opc
+
+  read opc
 
  done
-
-limpieza
